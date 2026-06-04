@@ -131,7 +131,8 @@ contract DarkPoolRouter {
         require(to != address(0), "Zero address");
         require(amount <= totalDarkFees, "Insufficient fees");
         totalDarkFees -= amount;
-        payable(to).transfer(amount);
+        (bool success, ) = payable(to).call{value: amount}("");
+        require(success, "ETH transfer failed");
         emit DarkPoolFeeWithdrawn(to, amount);
     }
 

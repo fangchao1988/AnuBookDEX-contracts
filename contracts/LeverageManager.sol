@@ -155,7 +155,8 @@ contract LeverageManager {
 
         // 退还多余保证金
         if (msg.value > requiredMargin) {
-            payable(msg.sender).transfer(msg.value - requiredMargin);
+            (bool ok, ) = payable(msg.sender).call{value: msg.value - requiredMargin}("");
+            require(ok, "ETH transfer failed");
         }
 
         positions[msg.sender][symbol] = Position({
@@ -195,8 +196,7 @@ contract LeverageManager {
         uint256 currentPrice = oraclePrices[symbol];
         require(currentPrice > 0, "No oracle price");
 
-        int256 pnl = _calcPnL(pos, currentPrice);
-        uint256 returnAmount = _settlePosition(pos, currentPrice, false);
+        (, int256 pnl) = _settlePosition(pos, currentPrice, false);
 
         delete positions[msg.sender][symbol];
 
@@ -224,7 +224,8 @@ contract LeverageManager {
 
         // 清算人获得罚金中的奖励部分
         if (reward > 0) {
-            payable(msg.sender).transfer(reward);
+            (bool ok, ) = payable(msg.sender).call{value: reward}("");
+            require(ok, "ETH transfer failed");
         }
 
         _settlePosition(pos, currentPrice, true);
@@ -274,8 +275,8 @@ contract LeverageManager {
         Position storage pos,
         uint256 currentPrice,
         bool isLiquidation
-    ) internal returns (uint256 returnAmount) {
-        int256 pnl = _calcPnL(pos, currentPrice);
+    ) internal returns (uint256 returnAmount, int256 pnl) {
+        pnl = _calcPnL(pos, currentPrice);
         uint256 margin = pos.margin;
 
         if (pnl >= 0) {
@@ -303,7 +304,8 @@ contract LeverageManager {
         }
 
         if (returnAmount > 0) {
-            payable(pos.account).transfer(returnAmount);
+            (bool ok, ) = payable(pos.account).call{value: returnAmount}("");
+            require(ok, "ETH transfer failed");
         }
     }
 

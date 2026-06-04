@@ -141,7 +141,6 @@ contract LiquidityRouter {
      * @dev 链下 AI 已决策: 订单簿深度不足 → 走此函数
      * @param pairId     交易对 ID (keccak256("ETH/USDT"))
      * @param amount     交易金额
-     * @param minReturn  最小预期回款 (滑点保护)
      * @param user       用户地址 (收益接收方)
      * @param isBuy      true=买入, false=卖出
      * @return returnAmount 实际到账金额
@@ -149,7 +148,7 @@ contract LiquidityRouter {
     function routeToRocketSwap(
         bytes32 pairId,
         uint256 amount,
-        uint256 minReturn,
+        uint256,
         address user,
         bool isBuy
     ) external onlyEngine returns (uint256 returnAmount) {
